@@ -1,0 +1,1356 @@
+<!DOCTYPE html>
+<html lang="en" class="dark">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Groove Subaru | Internet Director Command Center</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <script>
+        tailwind.config = {
+            darkMode: 'class',
+            theme: {
+                extend: {
+                    fontFamily: {
+                        sans: ['Inter', 'sans-serif'],
+                    },
+                    colors: {
+                        subaru: {
+                            50: '#f0f7ff',
+                            100: '#e0effe',
+                            500: '#0284c7',
+                            600: '#005691', // Classic Subaru Blue
+                            700: '#003865', // Deep Rally Blue
+                            800: '#00284b',
+                            900: '#001830',
+                        },
+                        groove: {
+                            orange: '#f97316',
+                            accent: '#38bdf8'
+                        }
+                    }
+                }
+            }
+        }
+    </script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background-color: #0b1120;
+            color: #f8fafc;
+        }
+        /* Custom Scrollbar */
+        ::-webkit-scrollbar {
+            width: 8px;
+            height: 8px;
+        }
+        ::-webkit-scrollbar-track {
+            background: #0f172a;
+        }
+        ::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 4px;
+        }
+        ::-webkit-scrollbar-thumb:hover {
+            background: #475569;
+        }
+        input[type="number"]::-webkit-inner-spin-button,
+        input[type="number"]::-webkit-outer-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+        .glass-panel {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+    </style>
+</head>
+<body class="min-h-screen flex flex-col selection:bg-subaru-500 selection:text-white">
+
+    <!-- Top Navigation Bar -->
+    <header class="sticky top-0 z-30 glass-panel border-b border-slate-800 px-4 sm:px-6 lg:px-8 py-4">
+        <div class="max-w-7xl mx-auto flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
+            <div class="flex items-center space-x-4">
+                <div class="w-12 h-12 rounded-xl bg-gradient-to-br from-subaru-600 to-subaru-800 flex items-center justify-center shadow-lg shadow-subaru-600/30 border border-subaru-500/40">
+                    <i class="fa-solid fa-mountain-sun text-2xl text-white"></i>
+                </div>
+                <div>
+                    <div class="flex items-center gap-2">
+                        <span class="text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded bg-subaru-500/20 text-groove-accent border border-subaru-500/30">Groove Subaru</span>
+                        <span class="text-xs text-slate-400 hidden md:inline"><i class="fa-solid fa-location-dot mr-1"></i>Englewood / Littleton, CO</span>
+                    </div>
+                    <h1 class="text-xl sm:text-2xl font-extrabold tracking-tight text-white mt-0.5">Internet Director Command Center</h1>
+                </div>
+            </div>
+
+            <!-- Date & Action Controls -->
+            <div class="flex flex-wrap items-center gap-3 w-full sm:w-auto justify-end">
+                <div class="relative flex items-center bg-slate-900/90 border border-slate-700 rounded-xl px-3 py-2 text-sm text-slate-200">
+                    <i class="fa-regular fa-calendar text-groove-accent mr-2.5"></i>
+                    <input type="date" id="trackerDate" class="bg-transparent border-none focus:outline-none text-white font-medium cursor-pointer">
+                </div>
+                
+                <button onclick="openSummaryModal()" class="flex items-center gap-2 bg-subaru-600 hover:bg-subaru-500 text-white font-semibold px-4 py-2.5 rounded-xl shadow-lg shadow-subaru-600/25 transition all duration-150 active:scale-95 text-sm">
+                    <i class="fa-solid fa-clipboard-list"></i>
+                    <span>Morning Dock Summary</span>
+                </button>
+
+                <button onclick="openMiddayModal()" class="flex items-center gap-2 bg-groove-orange hover:bg-orange-500 text-white font-semibold px-4 py-2.5 rounded-xl shadow-lg shadow-orange-600/25 transition all duration-150 active:scale-95 text-sm">
+                    <i class="fa-solid fa-sun"></i>
+                    <span>Midday Report (12-2 PM)</span>
+                </button>
+
+                <button onclick="openEodModal()" class="flex items-center gap-2 bg-purple-600 hover:bg-purple-500 text-white font-semibold px-4 py-2.5 rounded-xl shadow-lg shadow-purple-600/25 transition all duration-150 active:scale-95 text-sm">
+                    <i class="fa-solid fa-moon"></i>
+                    <span>End of Day Report</span>
+                </button>
+
+                <button onclick="confirmResetDay()" class="flex items-center gap-2 bg-slate-800 hover:bg-slate-700 text-slate-300 font-medium px-3.5 py-2.5 rounded-xl border border-slate-700 transition duration-150 text-sm" title="Reset Daily Counts">
+                    <i class="fa-solid fa-rotate-right"></i>
+                    <span class="hidden md:inline">New Day</span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Main Content Container -->
+    <main class="flex-grow max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 space-y-8">
+
+        <!-- Director's Morning & Midday Pulse Banner -->
+        <div class="bg-gradient-to-r from-slate-900 via-subaru-900/60 to-slate-900 rounded-2xl p-4 sm:p-5 border border-subaru-500/20 flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div class="flex items-start sm:items-center gap-3.5">
+                <div class="p-2.5 rounded-xl bg-amber-500/10 border border-amber-500/20 text-amber-400 shrink-0">
+                    <i class="fa-solid fa-mug-hot text-lg"></i>
+                </div>
+                <div>
+                    <h2 class="text-sm font-bold uppercase tracking-wider text-amber-400">Director's Daily Pulse (Morning, Midday & EOD Reports)</h2>
+                    <p class="text-xs sm:text-sm text-slate-300 mt-0.5">Verify morning leads before dock, track 12-2 PM midday appointments and showroom visits, and review MTD store visits at EOD.</p>
+                </div>
+            </div>
+            <div class="flex flex-wrap items-center gap-5 self-end md:self-center bg-slate-950/60 px-4 py-2.5 rounded-xl border border-slate-800/80">
+                <div>
+                    <span class="text-[11px] uppercase tracking-wider text-slate-400 block">Overnight Discrepancy</span>
+                    <span id="leadDiscrepancyBadge" class="text-sm font-bold text-emerald-400 flex items-center gap-1.5 mt-0.5">
+                        <i class="fa-solid fa-circle-check"></i> Balanced (0)
+                    </span>
+                </div>
+                <div class="h-8 w-px bg-slate-800"></div>
+                <div>
+                    <span class="text-[11px] uppercase tracking-wider text-slate-400 block">Team Appt Pace</span>
+                    <span id="teamApptPaceBadge" class="text-sm font-bold text-white mt-0.5 block">0 Set Today</span>
+                </div>
+                <div class="h-8 w-px bg-slate-800"></div>
+                <div>
+                    <span class="text-[11px] uppercase tracking-wider text-slate-400 block">Store Visits Today</span>
+                    <span id="teamVisitsPaceBadge" class="text-sm font-bold text-amber-400 mt-0.5 block">0 Visits</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- SECTION 1: Morning Metrics Grid -->
+        <section>
+            <div class="flex items-center justify-between mb-4">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-chart-pie text-groove-accent"></i>
+                    <span>Morning Core Metrics</span>
+                </h3>
+                <span class="text-xs text-slate-400">Click any number to type directly or use +/- controls</span>
+            </div>
+
+            <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-5">
+                
+                <!-- Card 1: Appointments Set for the Day -->
+                <div class="glass-panel rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden group">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-emerald-500/5 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs font-bold uppercase tracking-wider text-emerald-400 bg-emerald-500/10 px-2.5 py-1 rounded-lg border border-emerald-500/20">
+                                Today's Schedule
+                            </span>
+                            <div class="text-right">
+                                <span class="text-xs text-slate-400 block">Total Appts</span>
+                                <span id="totalApptsDisplay" class="text-2xl font-black text-white">0</span>
+                            </div>
+                        </div>
+
+                        <!-- Breakdown Controls -->
+                        <div class="space-y-3 mt-2">
+                            <!-- New Appts -->
+                            <div class="flex items-center justify-between bg-slate-900/70 p-2.5 rounded-xl border border-slate-800">
+                                <div>
+                                    <span class="text-sm font-semibold text-white block">New Vehicle</span>
+                                    <span class="text-[11px] text-slate-400">Outback, Forester, Crosstrek...</span>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <button onclick="adjustMetric('apptsNew', -1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition active:scale-90">
+                                        <i class="fa-solid fa-minus text-xs"></i>
+                                    </button>
+                                    <input type="number" id="apptsNew" value="0" min="0" oninput="updateDashboard()" class="w-11 text-center bg-slate-950 border border-slate-700 rounded-lg py-1 text-sm font-bold text-white focus:border-groove-accent focus:outline-none">
+                                    <button onclick="adjustMetric('apptsNew', 1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center transition active:scale-90">
+                                        <i class="fa-solid fa-plus text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Used Appts -->
+                            <div class="flex items-center justify-between bg-slate-900/70 p-2.5 rounded-xl border border-slate-800">
+                                <div>
+                                    <span class="text-sm font-semibold text-white block">Pre-Owned / CPO</span>
+                                    <span class="text-[11px] text-slate-400">Used retail inventory</span>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <button onclick="adjustMetric('apptsUsed', -1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition active:scale-90">
+                                        <i class="fa-solid fa-minus text-xs"></i>
+                                    </button>
+                                    <input type="number" id="apptsUsed" value="0" min="0" oninput="updateDashboard()" class="w-11 text-center bg-slate-950 border border-slate-700 rounded-lg py-1 text-sm font-bold text-white focus:border-groove-accent focus:outline-none">
+                                    <button onclick="adjustMetric('apptsUsed', 1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center transition active:scale-90">
+                                        <i class="fa-solid fa-plus text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Acquisition Appts -->
+                            <div class="flex items-center justify-between bg-slate-900/70 p-2.5 rounded-xl border border-slate-800">
+                                <div>
+                                    <span class="text-sm font-semibold text-amber-300 block">Acquisition / KBB</span>
+                                    <span class="text-[11px] text-slate-400">Street buys & trade-ins</span>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <button onclick="adjustMetric('apptsAcq', -1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition active:scale-90">
+                                        <i class="fa-solid fa-minus text-xs"></i>
+                                    </button>
+                                    <input type="number" id="apptsAcq" value="0" min="0" oninput="updateDashboard()" class="w-11 text-center bg-slate-950 border border-slate-700 rounded-lg py-1 text-sm font-bold text-amber-300 focus:border-amber-400 focus:outline-none">
+                                    <button onclick="adjustMetric('apptsAcq', 1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center transition active:scale-90">
+                                        <i class="fa-solid fa-plus text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Mini distribution bar -->
+                    <div class="mt-4 pt-3 border-t border-slate-800/80">
+                        <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden flex" id="apptMixBar">
+                            <div class="bg-subaru-500 h-full transition-all duration-300" style="width: 33.3%"></div>
+                            <div class="bg-emerald-500 h-full transition-all duration-300" style="width: 33.3%"></div>
+                            <div class="bg-amber-400 h-full transition-all duration-300" style="width: 33.4%"></div>
+                        </div>
+                        <div class="flex justify-between text-[10px] text-slate-400 mt-1.5 font-medium">
+                            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-subaru-500"></span>New</span>
+                            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-emerald-500"></span>Used</span>
+                            <span class="flex items-center gap-1"><span class="w-2 h-2 rounded-full bg-amber-400"></span>Acquisition</span>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 2: Overnight Leads Received -->
+                <div class="glass-panel rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-subaru-500/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
+                    <div>
+                        <div class="flex items-center justify-between mb-4">
+                            <span class="text-xs font-bold uppercase tracking-wider text-groove-accent bg-subaru-500/15 px-2.5 py-1 rounded-lg border border-subaru-500/30">
+                                Overnight Leads
+                            </span>
+                            <div class="text-right">
+                                <span class="text-xs text-slate-400 block">Total Overnight</span>
+                                <span id="totalOvernightDisplay" class="text-2xl font-black text-white">0</span>
+                            </div>
+                        </div>
+
+                        <div class="space-y-3 mt-2">
+                            <!-- Overnight New -->
+                            <div class="flex items-center justify-between bg-slate-900/70 p-3.5 rounded-xl border border-slate-800">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-lg bg-subaru-600/20 border border-subaru-500/30 flex items-center justify-center text-groove-accent font-bold">
+                                        N
+                                    </div>
+                                    <div>
+                                        <span class="text-sm font-semibold text-white block">New Leads</span>
+                                        <span class="text-[11px] text-slate-400">SOA, Groove.com, 3rd Party</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <button onclick="adjustMetric('overnightNew', -1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition active:scale-90">
+                                        <i class="fa-solid fa-minus text-xs"></i>
+                                    </button>
+                                    <input type="number" id="overnightNew" value="0" min="0" oninput="updateDashboard()" class="w-12 text-center bg-slate-950 border border-slate-700 rounded-lg py-1.5 text-sm font-bold text-white focus:border-groove-accent focus:outline-none">
+                                    <button onclick="adjustMetric('overnightNew', 1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center transition active:scale-90">
+                                        <i class="fa-solid fa-plus text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <!-- Overnight Used -->
+                            <div class="flex items-center justify-between bg-slate-900/70 p-3.5 rounded-xl border border-slate-800">
+                                <div class="flex items-center gap-3">
+                                    <div class="w-9 h-9 rounded-lg bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center text-indigo-400 font-bold">
+                                        U
+                                    </div>
+                                    <div>
+                                        <span class="text-sm font-semibold text-white block">Used Leads</span>
+                                        <span class="text-[11px] text-slate-400">CarGurus, AutoTrader, Cars.com</span>
+                                    </div>
+                                </div>
+                                <div class="flex items-center gap-1.5">
+                                    <button onclick="adjustMetric('overnightUsed', -1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-300 flex items-center justify-center transition active:scale-90">
+                                        <i class="fa-solid fa-minus text-xs"></i>
+                                    </button>
+                                    <input type="number" id="overnightUsed" value="0" min="0" oninput="updateDashboard()" class="w-12 text-center bg-slate-950 border border-slate-700 rounded-lg py-1.5 text-sm font-bold text-white focus:border-groove-accent focus:outline-none">
+                                    <button onclick="adjustMetric('overnightUsed', 1)" class="w-7 h-7 rounded-lg bg-slate-800 hover:bg-slate-700 text-white flex items-center justify-center transition active:scale-90">
+                                        <i class="fa-solid fa-plus text-xs"></i>
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-slate-800/80 flex items-center justify-between text-xs">
+                        <span class="text-slate-400">New vs. Used Ratio:</span>
+                        <span id="overnightSplitText" class="font-bold text-slate-200">0% New / 0% Used</span>
+                    </div>
+                </div>
+
+                <!-- Card 3: Internet Closing % -->
+                <div class="glass-panel rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-purple-500/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-bold uppercase tracking-wider text-purple-400 bg-purple-500/10 px-2.5 py-1 rounded-lg border border-purple-500/20">
+                                Internet Closing %
+                            </span>
+                            <span class="text-[11px] font-semibold text-slate-400">Target: <strong class="text-white">15.0%</strong></span>
+                        </div>
+
+                        <!-- Big Percentage Display -->
+                        <div class="my-3 flex items-baseline justify-between bg-slate-900/90 p-4 rounded-xl border border-slate-800">
+                            <div>
+                                <span class="text-xs text-slate-400 block">Current Closing Rate</span>
+                                <span id="internetClosingPctDisplay" class="text-3xl font-black text-white tracking-tight">0.0%</span>
+                            </div>
+                            <div id="internetClosingStatus" class="text-xs font-bold px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700">
+                                Pending
+                            </div>
+                        </div>
+
+                        <!-- Calculator Inputs (Leads vs Sold) -->
+                        <div class="grid grid-cols-2 gap-2.5 mt-3">
+                            <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800/80">
+                                <label class="text-[11px] text-slate-400 block mb-1">MTD Internet Leads</label>
+                                <input type="number" id="mtdInternetLeads" value="0" min="0" oninput="calculateClosingRates()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-sm font-bold text-white focus:border-purple-400 focus:outline-none">
+                            </div>
+                            <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800/80">
+                                <label class="text-[11px] text-slate-400 block mb-1">MTD Internet Sold</label>
+                                <input type="number" id="mtdInternetSold" value="0" min="0" oninput="calculateClosingRates()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-sm font-bold text-purple-300 focus:border-purple-400 focus:outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-slate-800/80">
+                        <div class="flex justify-between text-[11px] text-slate-400 mb-1">
+                            <span>Progress to 15% Benchmark</span>
+                            <span id="internetNeedMoreText">Enter MTD numbers</span>
+                        </div>
+                        <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                            <div id="internetClosingBar" class="bg-gradient-to-r from-purple-600 to-groove-accent h-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Card 4: Phone Closing % -->
+                <div class="glass-panel rounded-2xl p-5 flex flex-col justify-between relative overflow-hidden">
+                    <div class="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full blur-2xl -mr-10 -mt-10 pointer-events-none"></div>
+                    <div>
+                        <div class="flex items-center justify-between mb-3">
+                            <span class="text-xs font-bold uppercase tracking-wider text-amber-400 bg-amber-500/10 px-2.5 py-1 rounded-lg border border-amber-500/20">
+                                Phone Closing %
+                            </span>
+                            <span class="text-[11px] font-semibold text-slate-400">Target: <strong class="text-white">25.0%</strong></span>
+                        </div>
+
+                        <!-- Big Percentage Display -->
+                        <div class="my-3 flex items-baseline justify-between bg-slate-900/90 p-4 rounded-xl border border-slate-800">
+                            <div>
+                                <span class="text-xs text-slate-400 block">Inbound Phone Close</span>
+                                <span id="phoneClosingPctDisplay" class="text-3xl font-black text-white tracking-tight">0.0%</span>
+                            </div>
+                            <div id="phoneClosingStatus" class="text-xs font-bold px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700">
+                                Pending
+                            </div>
+                        </div>
+
+                        <!-- Calculator Inputs (Phone Ups vs Sold) -->
+                        <div class="grid grid-cols-2 gap-2.5 mt-3">
+                            <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800/80">
+                                <label class="text-[11px] text-slate-400 block mb-1">MTD Phone Ups</label>
+                                <input type="number" id="mtdPhoneLeads" value="0" min="0" oninput="calculateClosingRates()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-sm font-bold text-white focus:border-amber-400 focus:outline-none">
+                            </div>
+                            <div class="bg-slate-900/60 p-2.5 rounded-xl border border-slate-800/80">
+                                <label class="text-[11px] text-slate-400 block mb-1">MTD Phone Sold</label>
+                                <input type="number" id="mtdPhoneSold" value="0" min="0" oninput="calculateClosingRates()" class="w-full bg-slate-950 border border-slate-700 rounded-lg px-2.5 py-1.5 text-sm font-bold text-amber-300 focus:border-amber-400 focus:outline-none">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="mt-4 pt-3 border-t border-slate-800/80">
+                        <div class="flex justify-between text-[11px] text-slate-400 mb-1">
+                            <span>Progress to 25% Benchmark</span>
+                            <span id="phoneNeedMoreText">Enter MTD numbers</span>
+                        </div>
+                        <div class="w-full h-2 bg-slate-800 rounded-full overflow-hidden">
+                            <div id="phoneClosingBar" class="bg-gradient-to-r from-amber-500 to-emerald-400 h-full transition-all duration-300" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+
+            </div>
+        </section>
+
+        <!-- SECTION 2: Team Roster & Lead Handling Tracker -->
+        <section class="glass-panel rounded-2xl border border-slate-800 overflow-hidden shadow-xl">
+            <!-- Roster Header -->
+            <div class="p-5 sm:p-6 border-b border-slate-800 flex flex-col lg:flex-row lg:items-center justify-between gap-4 bg-slate-900/50">
+                <div>
+                    <div class="flex items-center gap-2.5">
+                        <h3 class="text-lg font-bold text-white">Internet Team Roster & Lead Handling</h3>
+                        <span id="activeRepCountBadge" class="text-xs font-bold px-2.5 py-0.5 rounded-full bg-subaru-500/20 text-groove-accent border border-subaru-500/30">0 Active Today</span>
+                    </div>
+                    <p class="text-xs sm:text-sm text-slate-400 mt-1">Track overnight lead distribution, daytime fresh leads, contact status, and individual appointment setting.</p>
+                </div>
+
+                <!-- Filter & Add Member Controls -->
+                <div class="flex flex-wrap items-center gap-3">
+                    <div class="flex items-center bg-slate-950 p-1 rounded-xl border border-slate-800 text-xs font-semibold">
+                        <button onclick="setRosterFilter('all')" id="filterAllBtn" class="px-3 py-1.5 rounded-lg bg-subaru-600 text-white transition">All Roster</button>
+                        <button onclick="setRosterFilter('on_shift')" id="filterShiftBtn" class="px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition">Working Today</button>
+                    </div>
+
+                    <button onclick="openAddRepModal()" class="flex items-center gap-2 bg-emerald-600 hover:bg-emerald-500 text-white font-semibold px-4 py-2 rounded-xl shadow-lg shadow-emerald-600/20 transition text-sm">
+                        <i class="fa-solid fa-user-plus text-xs"></i>
+                        <span>Add Team Member</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Responsive Table -->
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse">
+                    <thead>
+                        <tr class="border-b border-slate-800 bg-slate-950/70 text-[11px] font-bold uppercase tracking-wider text-slate-400">
+                            <th class="py-4 px-4 text-center w-24">Here Today</th>
+                            <th class="py-4 px-4">Team Member (A-Z)</th>
+                            <th class="py-4 px-3 text-center">Shift</th>
+                            <th class="py-4 px-3 text-center">Overnight</th>
+                            <th class="py-4 px-3 text-center">Fresh Today</th>
+                            <th class="py-4 px-3 text-center bg-subaru-900/20 text-groove-accent">Total Leads</th>
+                            <th class="py-4 px-3 text-center">100% Contacted</th>
+                            <th class="py-4 px-3 text-center">Outbound Calls</th>
+                            <th class="py-4 px-3 text-center">Appts Set</th>
+                            <th class="py-4 px-3 text-center text-amber-400">Store Visits</th>
+                            <th class="py-4 px-3 text-center text-purple-300">MTD Visits</th>
+                            <th class="py-4 px-4">Lead Handling / Coaching Notes</th>
+                            <th class="py-4 px-3 text-right"></th>
+                        </tr>
+                    </thead>
+                    <tbody id="rosterTableBody" class="divide-y divide-slate-800/60 text-sm">
+                        <!-- Dynamically Populated via JS -->
+                    </tbody>
+                    <!-- Totals Footer -->
+                    <tfoot class="bg-slate-950/90 border-t-2 border-slate-800 font-bold text-white text-sm">
+                        <tr>
+                            <td class="py-4 px-4 text-center text-xs text-emerald-400" id="footerActiveCount">0 Here</td>
+                            <td class="py-4 px-4 text-xs uppercase tracking-wider text-slate-400">Active Team Totals</td>
+                            <td class="py-4 px-3 text-center text-xs text-slate-500">—</td>
+                            <td class="py-4 px-3 text-center" id="footerOvernightTotal">0</td>
+                            <td class="py-4 px-3 text-center text-groove-accent" id="footerFreshTotal">0</td>
+                            <td class="py-4 px-3 text-center bg-subaru-900/20 text-white" id="footerTotalDayLeads">0</td>
+                            <td class="py-4 px-3 text-center text-xs text-emerald-400" id="footerContactedRate">100%</td>
+                            <td class="py-4 px-3 text-center" id="footerCallsTotal">0</td>
+                            <td class="py-4 px-3 text-center text-emerald-400" id="footerApptsTotal">0</td>
+                            <td class="py-4 px-3 text-center text-amber-400" id="footerVisitsTotal">0</td>
+                            <td class="py-4 px-3 text-center text-purple-300" id="footerMtdVisitsTotal">0</td>
+                            <td colspan="2" class="py-4 px-4 text-right text-xs font-normal text-slate-400">
+                                Only checked-in reps appear on reports
+                            </td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </section>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="max-w-7xl w-full mx-auto px-4 sm:px-6 lg:px-8 py-6 border-t border-slate-800/80 text-xs text-slate-500 flex flex-col sm:flex-row items-center justify-between gap-2">
+        <div>
+            <strong class="text-slate-400">Groove Subaru Internet Department</strong> • Daily Director Tracker v1.0
+        </div>
+        <div>
+            Ready for live team data input
+        </div>
+    </footer>
+
+    <!-- MODAL 1: Add New Team Member -->
+    <div id="addRepModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl animate-fade-in">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-5">
+                <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                    <i class="fa-solid fa-user-plus text-groove-accent"></i>
+                    <span>Add Internet Team Member</span>
+                </h3>
+                <button onclick="closeAddRepModal()" class="text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <form id="addRepForm" onsubmit="handleAddRep(event)" class="space-y-4">
+                <div>
+                    <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Full Name</label>
+                    <input type="text" id="newRepName" required placeholder="e.g., Tanner Brooks" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3.5 py-2.5 text-sm text-white focus:border-groove-accent focus:outline-none">
+                </div>
+
+                <div class="grid grid-cols-2 gap-3">
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Role / Title</label>
+                        <select id="newRepRole" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:border-groove-accent focus:outline-none">
+                            <option value="Internet Sales Mgr">Internet Sales Mgr</option>
+                            <option value="Senior ISM">Senior ISM</option>
+                            <option value="BDC / Coordinator">BDC / Coordinator</option>
+                            <option value="Acquisition Spec">Acquisition Spec</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase tracking-wider text-slate-400 mb-1.5">Today's Shift</label>
+                        <select id="newRepShift" class="w-full bg-slate-950 border border-slate-700 rounded-xl px-3 py-2.5 text-sm text-white focus:border-groove-accent focus:outline-none">
+                            <option value="Open (8:30-5)">Open (8:30-5)</option>
+                            <option value="Mid (10-7)">Mid (10-7)</option>
+                            <option value="Close (12-8)">Close (12-8)</option>
+                            <option value="Bell-to-Bell">Bell-to-Bell</option>
+                            <option value="Off">Off Today</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="flex justify-end gap-3 pt-4 border-t border-slate-800">
+                    <button type="button" onclick="closeAddRepModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium">Cancel</button>
+                    <button type="submit" class="px-5 py-2 rounded-xl bg-subaru-600 hover:bg-subaru-500 text-white text-sm font-bold shadow-lg shadow-subaru-600/30">Add to Roster</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL 2A: Morning Dock Summary -->
+    <div id="summaryModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+                <div>
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-clipboard-list text-groove-accent"></i>
+                        <span>Groove Subaru Morning Dock Summary</span>
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Ready to copy for GM/GSM Morning Huddle</p>
+                </div>
+                <button onclick="closeSummaryModal()" class="text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <textarea id="summaryReportText" readonly rows="14" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs sm:text-sm font-mono text-slate-200 focus:outline-none resize-none"></textarea>
+
+            <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-800">
+                <span id="copyConfirmMsg" class="text-xs font-semibold text-emerald-400 opacity-0 transition-opacity duration-200">
+                    <i class="fa-solid fa-check mr-1"></i> Copied to clipboard!
+                </span>
+                <div class="flex gap-3">
+                    <button onclick="closeSummaryModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium">Close</button>
+                    <button onclick="copySummaryReport()" class="flex items-center gap-2 px-5 py-2 rounded-xl bg-subaru-600 hover:bg-subaru-500 text-white text-sm font-bold shadow-lg shadow-subaru-600/30">
+                        <i class="fa-regular fa-copy"></i>
+                        <span>Copy Summary</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2B: Midday (12-2 PM) Report (Copyable Export) -->
+    <div id="middayModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+                <div>
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-sun text-groove-orange"></i>
+                        <span>Groove Subaru Midday Report (12-2 PM)</span>
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Daily Leads Received, Appointments Set & Store Visits by Rep</p>
+                </div>
+                <button onclick="closeMiddayModal()" class="text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <textarea id="middayReportText" readonly rows="14" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs sm:text-sm font-mono text-slate-200 focus:outline-none resize-none"></textarea>
+
+            <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-800">
+                <span id="copyMiddayConfirmMsg" class="text-xs font-semibold text-emerald-400 opacity-0 transition-opacity duration-200">
+                    <i class="fa-solid fa-check mr-1"></i> Copied to clipboard!
+                </span>
+                <div class="flex gap-3">
+                    <button onclick="downloadMiddayTxt()" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-medium border border-slate-700 transition">
+                        <i class="fa-solid fa-download text-xs"></i>
+                        <span>Download .TXT</span>
+                    </button>
+                    <button onclick="closeMiddayModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium">Close</button>
+                    <button onclick="copyMiddayReport()" class="flex items-center gap-2 px-5 py-2 rounded-xl bg-groove-orange hover:bg-orange-500 text-white text-sm font-bold shadow-lg shadow-orange-600/30">
+                        <i class="fa-regular fa-copy"></i>
+                        <span>Copy Midday Report</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 2C: End of Day Report (Copyable Export) -->
+    <div id="eodModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-lg w-full p-6 shadow-2xl">
+            <div class="flex items-center justify-between border-b border-slate-800 pb-4 mb-4">
+                <div>
+                    <h3 class="text-lg font-bold text-white flex items-center gap-2">
+                        <i class="fa-solid fa-moon text-purple-400"></i>
+                        <span>Groove Subaru End of Day (EOD) Report</span>
+                    </h3>
+                    <p class="text-xs text-slate-400 mt-0.5">Daily Leads, Appointments Set, Store Visits & MTD Store Visits by Rep</p>
+                </div>
+                <button onclick="closeEodModal()" class="text-slate-400 hover:text-white">
+                    <i class="fa-solid fa-xmark text-lg"></i>
+                </button>
+            </div>
+
+            <textarea id="eodReportText" readonly rows="14" class="w-full bg-slate-950 border border-slate-800 rounded-xl p-4 text-xs sm:text-sm font-mono text-slate-200 focus:outline-none resize-none"></textarea>
+
+            <div class="flex items-center justify-between mt-4 pt-3 border-t border-slate-800">
+                <span id="copyEodConfirmMsg" class="text-xs font-semibold text-emerald-400 opacity-0 transition-opacity duration-200">
+                    <i class="fa-solid fa-check mr-1"></i> Copied to clipboard!
+                </span>
+                <div class="flex gap-3">
+                    <button onclick="downloadEodTxt()" class="flex items-center gap-1.5 px-3.5 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-200 text-xs sm:text-sm font-medium border border-slate-700 transition">
+                        <i class="fa-solid fa-download text-xs"></i>
+                        <span>Download .TXT</span>
+                    </button>
+                    <button onclick="closeEodModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium">Close</button>
+                    <button onclick="copyEodReport()" class="flex items-center gap-2 px-5 py-2 rounded-xl bg-purple-600 hover:bg-purple-500 text-white text-sm font-bold shadow-lg shadow-purple-600/30">
+                        <i class="fa-regular fa-copy"></i>
+                        <span>Copy EOD Report</span>
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- MODAL 3: Reset Day Confirmation -->
+    <div id="resetModal" class="fixed inset-0 z-50 hidden bg-slate-950/80 backdrop-blur-sm flex items-center justify-center p-4">
+        <div class="bg-slate-900 border border-slate-700 rounded-2xl max-w-md w-full p-6 shadow-2xl">
+            <div class="flex items-center gap-3 text-amber-400 mb-3">
+                <i class="fa-solid fa-triangle-exclamation text-2xl"></i>
+                <h3 class="text-lg font-bold text-white">Start Fresh Morning Log?</h3>
+            </div>
+            <p class="text-sm text-slate-300 mb-6">
+                This will zero out today's overnight lead counts, daily appointments, and individual rep daily handling stats while preserving your team roster and MTD closing percentages.
+            </p>
+            <div class="flex justify-end gap-3">
+                <button onclick="closeResetModal()" class="px-4 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-sm font-medium">Cancel</button>
+                <button onclick="executeResetDay()" class="px-5 py-2 rounded-xl bg-amber-600 hover:bg-amber-500 text-white text-sm font-bold">Reset Daily Numbers</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- INITIAL STATE & GROOVE SUBARU ROSTER DATA (CLEARED) ---
+        let currentFilter = 'all';
+
+        let teamRoster = [];
+
+        // --- INITIALIZATION ---
+        window.onload = function() {
+            // Set default date to today
+            const today = new Date().toISOString().split('T')[0];
+            document.getElementById('trackerDate').value = today;
+
+            updateDashboard();
+            calculateClosingRates();
+            renderRoster();
+        };
+
+        // --- METRIC ADJUSTMENT HELPERS ---
+        function adjustMetric(inputId, delta) {
+            const input = document.getElementById(inputId);
+            let currentVal = parseInt(input.value) || 0;
+            currentVal = Math.max(0, currentVal + delta);
+            input.value = currentVal;
+            updateDashboard();
+        }
+
+        // --- UPDATE TOP CARDS & SUMMARY INDICATORS ---
+        function updateDashboard() {
+            const apptsNew = parseInt(document.getElementById('apptsNew').value) || 0;
+            const apptsUsed = parseInt(document.getElementById('apptsUsed').value) || 0;
+            const apptsAcq = parseInt(document.getElementById('apptsAcq').value) || 0;
+            const totalAppts = apptsNew + apptsUsed + apptsAcq;
+
+            document.getElementById('totalApptsDisplay').textContent = totalAppts;
+
+            // Update Appt Mix Bar
+            const barContainer = document.getElementById('apptMixBar').children;
+            if (totalAppts > 0) {
+                barContainer[0].style.width = `${(apptsNew / totalAppts) * 100}%`;
+                barContainer[1].style.width = `${(apptsUsed / totalAppts) * 100}%`;
+                barContainer[2].style.width = `${(apptsAcq / totalAppts) * 100}%`;
+            } else {
+                barContainer[0].style.width = '33.3%';
+                barContainer[1].style.width = '33.3%';
+                barContainer[2].style.width = '33.4%';
+            }
+
+            // Overnight Leads
+            const overnightNew = parseInt(document.getElementById('overnightNew').value) || 0;
+            const overnightUsed = parseInt(document.getElementById('overnightUsed').value) || 0;
+            const totalOvernight = overnightNew + overnightUsed;
+
+            document.getElementById('totalOvernightDisplay').textContent = totalOvernight;
+
+            if (totalOvernight > 0) {
+                const newPct = Math.round((overnightNew / totalOvernight) * 100);
+                const usedPct = 100 - newPct;
+                document.getElementById('overnightSplitText').textContent = `${newPct}% New / ${usedPct}% Used`;
+            } else {
+                document.getElementById('overnightSplitText').textContent = `0% New / 0% Used`;
+            }
+
+            updateDiscrepancyBanner();
+        }
+
+        // --- CLOSING % CALCULATORS ---
+        function calculateClosingRates() {
+            // Internet Closing %
+            const intLeads = parseInt(document.getElementById('mtdInternetLeads').value) || 0;
+            const intSold = parseInt(document.getElementById('mtdInternetSold').value) || 0;
+            const intPct = intLeads > 0 ? ((intSold / intLeads) * 100) : 0;
+
+            document.getElementById('internetClosingPctDisplay').textContent = `${intPct.toFixed(1)}%`;
+
+            const intStatus = document.getElementById('internetClosingStatus');
+            const intBar = document.getElementById('internetClosingBar');
+            const intNeedText = document.getElementById('internetNeedMoreText');
+
+            const intTarget = 15.0;
+            const barWidthInt = Math.min(100, (intPct / intTarget) * 100);
+            intBar.style.width = `${barWidthInt}%`;
+
+            if (intLeads === 0 && intSold === 0) {
+                intStatus.textContent = 'Pending';
+                intStatus.className = 'text-xs font-bold px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700';
+                intNeedText.textContent = 'Enter MTD numbers';
+            } else if (intPct >= intTarget) {
+                intStatus.textContent = 'Above Goal';
+                intStatus.className = 'text-xs font-bold px-2.5 py-1 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+                intNeedText.textContent = 'Exceeding 15% benchmark!';
+            } else if (intPct >= 13.0) {
+                intStatus.textContent = 'On Pace';
+                intStatus.className = 'text-xs font-bold px-2.5 py-1 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30';
+                const needed = Math.ceil((0.15 * intLeads) - intSold);
+                intNeedText.textContent = `Need ${Math.max(1, needed)} more sold for 15%`;
+            } else {
+                intStatus.textContent = 'Below Pace';
+                intStatus.className = 'text-xs font-bold px-2.5 py-1 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/30';
+                const needed = Math.ceil((0.15 * intLeads) - intSold);
+                intNeedText.textContent = `Need ${Math.max(1, needed)} more sold for 15%`;
+            }
+
+            // Phone Closing %
+            const phoneLeads = parseInt(document.getElementById('mtdPhoneLeads').value) || 0;
+            const phoneSold = parseInt(document.getElementById('mtdPhoneSold').value) || 0;
+            const phonePct = phoneLeads > 0 ? ((phoneSold / phoneLeads) * 100) : 0;
+
+            document.getElementById('phoneClosingPctDisplay').textContent = `${phonePct.toFixed(1)}%`;
+
+            const phoneStatus = document.getElementById('phoneClosingStatus');
+            const phoneBar = document.getElementById('phoneClosingBar');
+            const phoneNeedText = document.getElementById('phoneNeedMoreText');
+
+            const phoneTarget = 25.0;
+            const barWidthPhone = Math.min(100, (phonePct / phoneTarget) * 100);
+            phoneBar.style.width = `${barWidthPhone}%`;
+
+            if (phoneLeads === 0 && phoneSold === 0) {
+                phoneStatus.textContent = 'Pending';
+                phoneStatus.className = 'text-xs font-bold px-2.5 py-1 rounded-md bg-slate-800 text-slate-300 border border-slate-700';
+                phoneNeedText.textContent = 'Enter MTD numbers';
+            } else if (phonePct >= phoneTarget) {
+                phoneStatus.textContent = 'Above Goal';
+                phoneStatus.className = 'text-xs font-bold px-2.5 py-1 rounded-md bg-emerald-500/20 text-emerald-400 border border-emerald-500/30';
+                phoneNeedText.textContent = 'Exceeding 25% benchmark!';
+            } else if (phonePct >= 21.0) {
+                phoneStatus.textContent = 'Near Goal';
+                phoneStatus.className = 'text-xs font-bold px-2.5 py-1 rounded-md bg-amber-500/20 text-amber-300 border border-amber-500/30';
+                const needed = Math.ceil((0.25 * phoneLeads) - phoneSold);
+                phoneNeedText.textContent = `Need ${Math.max(1, needed)} more sold for 25%`;
+            } else {
+                phoneStatus.textContent = 'Needs Focus';
+                phoneStatus.className = 'text-xs font-bold px-2.5 py-1 rounded-md bg-rose-500/20 text-rose-400 border border-rose-500/30';
+                const needed = Math.ceil((0.25 * phoneLeads) - phoneSold);
+                phoneNeedText.textContent = `Need ${Math.max(1, needed)} more sold for 25%`;
+            }
+        }
+
+        // --- ROSTER RENDERING & LOGIC ---
+        function setRosterFilter(filterType) {
+            currentFilter = filterType;
+            const allBtn = document.getElementById('filterAllBtn');
+            const shiftBtn = document.getElementById('filterShiftBtn');
+
+            if (filterType === 'all') {
+                allBtn.className = 'px-3 py-1.5 rounded-lg bg-subaru-600 text-white transition';
+                shiftBtn.className = 'px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition';
+            } else {
+                shiftBtn.className = 'px-3 py-1.5 rounded-lg bg-subaru-600 text-white transition';
+                allBtn.className = 'px-3 py-1.5 rounded-lg text-slate-400 hover:text-white transition';
+            }
+            renderRoster();
+        }
+
+        function getInitials(name) {
+            return name.split(' ').map(n => n[0]).join('').substring(0, 2).toUpperCase();
+        }
+
+        function toggleRepPresence(id) {
+            const rep = teamRoster.find(r => r.id === id);
+            if (rep) {
+                rep.presentToday = !rep.presentToday;
+                renderRoster();
+            }
+        }
+
+        function updateRepShift(id, val) {
+            const rep = teamRoster.find(r => r.id === id);
+            if (rep) {
+                rep.shift = val;
+                if (val === 'Off') {
+                    rep.presentToday = false;
+                } else if (!rep.presentToday) {
+                    rep.presentToday = true;
+                }
+                renderRoster();
+            }
+        }
+
+        function stepRepField(id, field, delta) {
+            const rep = teamRoster.find(r => r.id === id);
+            if (rep) {
+                let cur = parseInt(rep[field]) || 0;
+                rep[field] = Math.max(0, cur + delta);
+                renderRoster();
+                updateDashboard();
+            }
+        }
+
+        function updateRepField(id, field, value) {
+            const rep = teamRoster.find(r => r.id === id);
+            if (rep) {
+                rep[field] = value;
+                renderRoster();
+                updateDashboard();
+            }
+        }
+
+        function removeRep(id) {
+            teamRoster = teamRoster.filter(r => r.id !== id);
+            renderRoster();
+            updateDashboard();
+        }
+
+        function renderRoster() {
+            const tbody = document.getElementById('rosterTableBody');
+            tbody.innerHTML = '';
+
+            // Keep master roster sorted alphabetically by name
+            teamRoster.sort((a, b) => a.name.localeCompare(b.name));
+
+            const filteredRoster = teamRoster.filter(rep => {
+                if (currentFilter === 'on_shift') return rep.presentToday;
+                return true;
+            });
+
+            if (filteredRoster.length === 0) {
+                const emptyTr = document.createElement('tr');
+                emptyTr.innerHTML = `
+                    <td colspan="13" class="py-12 text-center text-slate-500 text-sm">
+                        <i class="fa-solid fa-users-slash text-2xl mb-2 block opacity-40"></i>
+                        No team members added yet. Click <strong class="text-slate-300">"Add Team Member"</strong> above to start building your roster.
+                    </td>
+                `;
+                tbody.appendChild(emptyTr);
+            } else {
+                filteredRoster.forEach(rep => {
+                    const isHere = rep.presentToday;
+                    const totalRepLeads = (parseInt(rep.overnightAssigned) || 0) + (parseInt(rep.freshLeads) || 0);
+                    const tr = document.createElement('tr');
+                    tr.className = `${!isHere ? 'opacity-45 bg-slate-950/40' : 'hover:bg-slate-800/30'} transition-all duration-150`;
+
+                    tr.innerHTML = `
+                        <!-- Here Today Checkbox / Pill -->
+                        <td class="py-4 px-4 text-center whitespace-nowrap">
+                            <button onclick="toggleRepPresence(${rep.id})" class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold border transition-all ${isHere ? 'bg-emerald-500/15 text-emerald-400 border-emerald-500/30 shadow-sm shadow-emerald-500/10' : 'bg-slate-900 text-slate-500 border-slate-800 hover:text-slate-300'}">
+                                <i class="fa-solid ${isHere ? 'fa-user-check' : 'fa-user-slash'} text-[11px]"></i>
+                                <span>${isHere ? 'Here' : 'Off'}</span>
+                            </button>
+                        </td>
+
+                        <!-- Name & Role -->
+                        <td class="py-4 px-4 whitespace-nowrap">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-xl ${isHere ? 'bg-gradient-to-tr from-subaru-700 to-subaru-500 text-white border-subaru-400/30' : 'bg-slate-800 text-slate-500 border-slate-700'} flex items-center justify-center font-bold text-xs border">
+                                    ${getInitials(rep.name)}
+                                </div>
+                                <div>
+                                    <div class="font-bold text-white text-sm leading-tight">${rep.name}</div>
+                                    <div class="text-xs text-slate-400 mt-0.5">${rep.role}</div>
+                                </div>
+                            </div>
+                        </td>
+
+                        <!-- Shift Selector -->
+                        <td class="py-4 px-3 text-center whitespace-nowrap">
+                            <select onchange="updateRepShift(${rep.id}, this.value)" class="bg-slate-900/90 border ${!isHere ? 'border-slate-800 text-slate-500' : 'border-slate-700/80 text-slate-200'} rounded-xl px-2.5 py-1.5 text-xs font-medium focus:outline-none focus:border-groove-accent cursor-pointer">
+                                <option value="Open (8:30-5)" ${rep.shift === 'Open (8:30-5)' ? 'selected' : ''}>Open (8:30-5)</option>
+                                <option value="Mid (10-7)" ${rep.shift === 'Mid (10-7)' ? 'selected' : ''}>Mid (10-7)</option>
+                                <option value="Close (12-8)" ${rep.shift === 'Close (12-8)' ? 'selected' : ''}>Close (12-8)</option>
+                                <option value="Bell-to-Bell" ${rep.shift === 'Bell-to-Bell' ? 'selected' : ''}>Bell-to-Bell</option>
+                                <option value="Off" ${rep.shift === 'Off' ? 'selected' : ''}>Off Today</option>
+                            </select>
+                        </td>
+
+                        <!-- Overnight Assigned -->
+                        <td class="py-4 px-3 text-center whitespace-nowrap">
+                            <div class="inline-flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-800">
+                                <button onclick="stepRepField(${rep.id}, 'overnightAssigned', -1)" class="w-6 h-6 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white text-xs transition">-</button>
+                                <input type="number" value="${rep.overnightAssigned}" min="0" onchange="updateRepField(${rep.id}, 'overnightAssigned', parseInt(this.value)||0)" class="w-9 text-center bg-transparent font-bold text-white text-sm focus:outline-none">
+                                <button onclick="stepRepField(${rep.id}, 'overnightAssigned', 1)" class="w-6 h-6 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white text-xs transition">+</button>
+                            </div>
+                        </td>
+
+                        <!-- Fresh Leads Today -->
+                        <td class="py-4 px-3 text-center whitespace-nowrap">
+                            <div class="inline-flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-800">
+                                <button onclick="stepRepField(${rep.id}, 'freshLeads', -1)" class="w-6 h-6 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white text-xs transition">-</button>
+                                <input type="number" value="${rep.freshLeads}" min="0" onchange="updateRepField(${rep.id}, 'freshLeads', parseInt(this.value)||0)" class="w-9 text-center bg-transparent font-bold text-groove-accent text-sm focus:outline-none">
+                                <button onclick="stepRepField(${rep.id}, 'freshLeads', 1)" class="w-6 h-6 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white text-xs transition">+</button>
+                            </div>
+                        </td>
+
+                        <!-- Total Leads Today (Overnight + Fresh) -->
+                        <td class="py-4 px-3 text-center whitespace-nowrap bg-subaru-950/20">
+                            <span class="inline-flex items-center justify-center min-w-[2.25rem] px-2.5 py-1 rounded-lg bg-subaru-500/15 border border-subaru-500/30 text-white font-extrabold text-sm">
+                                ${totalRepLeads}
+                            </span>
+                        </td>
+
+                        <!-- 100% Overnight Contacted Toggle -->
+                        <td class="py-4 px-3 text-center whitespace-nowrap">
+                            <button onclick="updateRepField(${rep.id}, 'allContacted', ${!rep.allContacted})" class="px-3 py-1.5 rounded-xl text-xs font-bold border transition ${rep.allContacted ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/25' : 'bg-amber-500/15 text-amber-300 border-amber-500/30'}">
+                                ${rep.allContacted ? 'Yes (100%)' : 'In Progress'}
+                            </button>
+                        </td>
+
+                        <!-- Outbound Calls -->
+                        <td class="py-4 px-3 text-center whitespace-nowrap">
+                            <input type="number" value="${rep.outboundCalls}" min="0" onchange="updateRepField(${rep.id}, 'outboundCalls', parseInt(this.value)||0)" class="w-14 text-center bg-slate-900/90 border border-slate-800 focus:border-groove-accent rounded-xl py-1.5 text-sm font-bold text-slate-200 focus:outline-none">
+                        </td>
+
+                        <!-- Appts Set Today -->
+                        <td class="py-4 px-3 text-center whitespace-nowrap">
+                            <div class="inline-flex items-center bg-slate-900/90 p-1 rounded-xl border border-slate-800">
+                                <button onclick="stepRepField(${rep.id}, 'apptsSet', -1)" class="w-6 h-6 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white text-xs transition">-</button>
+                                <input type="number" value="${rep.apptsSet}" min="0" onchange="updateRepField(${rep.id}, 'apptsSet', parseInt(this.value)||0)" class="w-9 text-center bg-transparent font-bold text-emerald-400 text-sm focus:outline-none">
+                                <button onclick="stepRepField(${rep.id}, 'apptsSet', 1)" class="w-6 h-6 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white text-xs transition">+</button>
+                            </div>
+                        </td>
+
+                        <!-- Store Visits Today -->
+                        <td class="py-4 px-3 text-center whitespace-nowrap">
+                            <div class="inline-flex items-center bg-slate-900/90 p-1 rounded-xl border border-amber-500/25">
+                                <button onclick="stepRepField(${rep.id}, 'storeVisits', -1)" class="w-6 h-6 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white text-xs transition">-</button>
+                                <input type="number" value="${rep.storeVisits || 0}" min="0" onchange="updateRepField(${rep.id}, 'storeVisits', parseInt(this.value)||0)" class="w-9 text-center bg-transparent font-bold text-amber-400 text-sm focus:outline-none">
+                                <button onclick="stepRepField(${rep.id}, 'storeVisits', 1)" class="w-6 h-6 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white text-xs transition">+</button>
+                            </div>
+                        </td>
+
+                        <!-- MTD Store Visits -->
+                        <td class="py-4 px-3 text-center whitespace-nowrap">
+                            <div class="inline-flex items-center bg-slate-900/90 p-1 rounded-xl border border-purple-500/25">
+                                <button onclick="stepRepField(${rep.id}, 'mtdStoreVisits', -1)" class="w-6 h-6 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white text-xs transition">-</button>
+                                <input type="number" value="${rep.mtdStoreVisits || 0}" min="0" onchange="updateRepField(${rep.id}, 'mtdStoreVisits', parseInt(this.value)||0)" class="w-10 text-center bg-transparent font-bold text-purple-300 text-sm focus:outline-none">
+                                <button onclick="stepRepField(${rep.id}, 'mtdStoreVisits', 1)" class="w-6 h-6 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white text-xs transition">+</button>
+                            </div>
+                        </td>
+
+                        <!-- Coaching / Lead Handling Notes -->
+                        <td class="py-4 px-4 min-w-[220px]">
+                            <input type="text" value="${rep.notes}" onchange="updateRepField(${rep.id}, 'notes', this.value)" placeholder="Add note..." class="w-full bg-slate-900/60 border border-slate-800/90 focus:border-slate-600 rounded-xl px-3 py-1.5 text-xs text-slate-200 focus:outline-none">
+                        </td>
+
+                        <!-- Delete Action -->
+                        <td class="py-4 px-3 text-right whitespace-nowrap">
+                            <button onclick="removeRep(${rep.id})" class="text-slate-600 hover:text-rose-400 p-1.5 transition" title="Remove from Roster">
+                                <i class="fa-regular fa-trash-can"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+            }
+
+            updateRosterTotals();
+            updateDiscrepancyBanner();
+        }
+
+        function updateRosterTotals() {
+            const workingReps = teamRoster.filter(r => r.presentToday);
+            const totalOvernightAssigned = workingReps.reduce((sum, r) => sum + (parseInt(r.overnightAssigned) || 0), 0);
+            const totalFresh = workingReps.reduce((sum, r) => sum + (parseInt(r.freshLeads) || 0), 0);
+            const totalDayLeads = totalOvernightAssigned + totalFresh;
+            const totalCalls = workingReps.reduce((sum, r) => sum + (parseInt(r.outboundCalls) || 0), 0);
+            const totalApptsSetByTeam = workingReps.reduce((sum, r) => sum + (parseInt(r.apptsSet) || 0), 0);
+            const totalVisitsByTeam = workingReps.reduce((sum, r) => sum + (parseInt(r.storeVisits) || 0), 0);
+            const totalMtdVisitsByTeam = workingReps.reduce((sum, r) => sum + (parseInt(r.mtdStoreVisits) || 0), 0);
+
+            // Contacted compliance rate among reps working today
+            const contactedCount = workingReps.filter(r => r.allContacted).length;
+            const contactedPct = workingReps.length > 0 ? Math.round((contactedCount / workingReps.length) * 100) : 100;
+
+            document.getElementById('activeRepCountBadge').textContent = `${workingReps.length} Active Today`;
+            document.getElementById('footerActiveCount').textContent = `${workingReps.length} Here`;
+            document.getElementById('footerOvernightTotal').textContent = totalOvernightAssigned;
+            document.getElementById('footerFreshTotal').textContent = totalFresh;
+            document.getElementById('footerTotalDayLeads').textContent = totalDayLeads;
+            document.getElementById('footerContactedRate').textContent = `${contactedPct}% Done`;
+            document.getElementById('footerCallsTotal').textContent = totalCalls;
+            document.getElementById('footerApptsTotal').textContent = totalApptsSetByTeam;
+            document.getElementById('footerVisitsTotal').textContent = totalVisitsByTeam;
+            document.getElementById('footerMtdVisitsTotal').textContent = totalMtdVisitsByTeam;
+            document.getElementById('teamApptPaceBadge').textContent = `${totalApptsSetByTeam} Set by Team Today`;
+            document.getElementById('teamVisitsPaceBadge').textContent = `${totalVisitsByTeam} Visits Today`;
+        }
+
+        // Checks if Total Overnight Leads Received matches Total Overnight Leads Assigned to Roster
+        function updateDiscrepancyBanner() {
+            const overnightNew = parseInt(document.getElementById('overnightNew').value) || 0;
+            const overnightUsed = parseInt(document.getElementById('overnightUsed').value) || 0;
+            const totalOvernightReceived = overnightNew + overnightUsed;
+
+            const totalOvernightAssigned = teamRoster
+                .filter(r => r.presentToday)
+                .reduce((sum, r) => sum + (parseInt(r.overnightAssigned) || 0), 0);
+            const diff = totalOvernightReceived - totalOvernightAssigned;
+
+            const badge = document.getElementById('leadDiscrepancyBadge');
+            if (diff === 0) {
+                badge.className = 'text-sm font-bold text-emerald-400 flex items-center gap-1.5 mt-0.5';
+                badge.innerHTML = `<i class="fa-solid fa-circle-check"></i> Balanced (${totalOvernightReceived})`;
+            } else if (diff > 0) {
+                badge.className = 'text-sm font-bold text-amber-400 flex items-center gap-1.5 mt-0.5';
+                badge.innerHTML = `<i class="fa-solid fa-triangle-exclamation"></i> ${diff} Unassigned Overnight`;
+            } else {
+                badge.className = 'text-sm font-bold text-groove-accent flex items-center gap-1.5 mt-0.5';
+                badge.innerHTML = `<i class="fa-solid fa-circle-info"></i> +${Math.abs(diff)} Assigned vs. Logged`;
+            }
+        }
+
+        // --- MODAL HANDLERS ---
+        function openAddRepModal() {
+            document.getElementById('addRepModal').classList.remove('hidden');
+            document.getElementById('newRepName').focus();
+        }
+
+        function closeAddRepModal() {
+            document.getElementById('addRepModal').classList.add('hidden');
+            document.getElementById('addRepForm').reset();
+        }
+
+        function handleAddRep(e) {
+            e.preventDefault();
+            const name = document.getElementById('newRepName').value.trim();
+            const role = document.getElementById('newRepRole').value;
+            const shift = document.getElementById('newRepShift').value;
+
+            if (!name) return;
+
+            const newRep = {
+                id: Date.now(),
+                name,
+                role,
+                presentToday: shift !== 'Off',
+                shift,
+                overnightAssigned: 0,
+                freshLeads: 0,
+                allContacted: true,
+                outboundCalls: 0,
+                apptsSet: 0,
+                storeVisits: 0,
+                mtdStoreVisits: 0,
+                notes: ''
+            };
+
+            teamRoster.push(newRep);
+            renderRoster();
+            closeAddRepModal();
+        }
+
+        // --- MORNING DOCK SUMMARY GENERATOR ---
+        function openSummaryModal() {
+            const dateVal = document.getElementById('trackerDate').value;
+            const apptsNew = document.getElementById('apptsNew').value;
+            const apptsUsed = document.getElementById('apptsUsed').value;
+            const apptsAcq = document.getElementById('apptsAcq').value;
+            const totalAppts = parseInt(apptsNew) + parseInt(apptsUsed) + parseInt(apptsAcq);
+
+            const overNew = document.getElementById('overnightNew').value;
+            const overUsed = parseInt(document.getElementById('overnightUsed').value) || 0;
+            const totalOver = parseInt(overNew) + overUsed;
+
+            const intClose = document.getElementById('internetClosingPctDisplay').textContent;
+            const intSold = document.getElementById('mtdInternetSold').value;
+            const intLeads = document.getElementById('mtdInternetLeads').value;
+
+            const phoneClose = document.getElementById('phoneClosingPctDisplay').textContent;
+            const phoneSold = document.getElementById('mtdPhoneSold').value;
+            const phoneLeads = document.getElementById('mtdPhoneLeads').value;
+
+            const workingReps = teamRoster
+                .filter(r => r.presentToday)
+                .sort((a, b) => a.name.localeCompare(b.name));
+            const repSummaryLines = workingReps.length > 0
+                ? workingReps.map(r => {
+                    const noteSuffix = r.notes && r.notes.trim() !== '' ? ` | Note: ${r.notes.trim()}` : '';
+                    return `- ${r.name} (${r.shift}): ${r.overnightAssigned} Overnight / ${r.freshLeads} Fresh | ${r.outboundCalls} Calls | ${r.apptsSet} Appts Set${noteSuffix}`;
+                }).join('\n')
+                : '- No team members marked as Here Today.';
+
+            const report = 
+`================================================
+GROOVE SUBARU - MORNING INTERNET DOCK REPORT
+Date: ${dateVal}
+================================================
+
+APPOINTMENTS SET FOR TODAY: ${totalAppts} Total
+- New Vehicle Appointments: ${apptsNew}
+- Pre-Owned / CPO Appointments: ${apptsUsed}
+- Acquisition / KBB Appointments: ${apptsAcq}
+
+OVERNIGHT LEADS RECEIVED: ${totalOver} Total
+- New Leads: ${overNew}
+- Used Leads: ${overUsed}
+
+MTD DEPARTMENT CLOSING PERCENTAGES
+- Internet Closing: ${intClose} (${intSold} Sold / ${intLeads} Leads)
+- Inbound Phone Closing: ${phoneClose} (${phoneSold} Sold / ${phoneLeads} Phone Ups)
+
+ACTIVE ROSTER TODAY (${workingReps.length} On Floor)
+${repSummaryLines}
+================================================`;
+
+            document.getElementById('summaryReportText').value = report;
+            document.getElementById('summaryModal').classList.remove('hidden');
+        }
+
+        function closeSummaryModal() {
+            document.getElementById('summaryModal').classList.add('hidden');
+        }
+
+        function copySummaryReport() {
+            const textarea = document.getElementById('summaryReportText');
+            textarea.select();
+            document.execCommand('copy');
+
+            const msg = document.getElementById('copyConfirmMsg');
+            msg.classList.remove('opacity-0');
+            setTimeout(() => msg.classList.add('opacity-0'), 2500);
+        }
+
+        // --- MIDDAY (12-2 PM) REPORT GENERATOR & EXPORT ---
+        function openMiddayModal() {
+            const dateVal = document.getElementById('trackerDate').value;
+            const workingReps = teamRoster
+                .filter(r => r.presentToday)
+                .sort((a, b) => a.name.localeCompare(b.name));
+
+            const totalOvernight = workingReps.reduce((sum, r) => sum + (parseInt(r.overnightAssigned) || 0), 0);
+            const totalFresh = workingReps.reduce((sum, r) => sum + (parseInt(r.freshLeads) || 0), 0);
+            const totalLeadsToday = totalOvernight + totalFresh;
+            const totalApptsSet = workingReps.reduce((sum, r) => sum + (parseInt(r.apptsSet) || 0), 0);
+            const totalStoreVisits = workingReps.reduce((sum, r) => sum + (parseInt(r.storeVisits) || 0), 0);
+
+            const repMiddayLines = workingReps.length > 0
+                ? workingReps.map(r => {
+                    const repOver = parseInt(r.overnightAssigned) || 0;
+                    const repFresh = parseInt(r.freshLeads) || 0;
+                    const repTotalLeads = repOver + repFresh;
+                    const repAppts = parseInt(r.apptsSet) || 0;
+                    const repVisits = parseInt(r.storeVisits) || 0;
+                    return `- ${r.name}: ${repTotalLeads} Leads Today (${repOver} Overnight, ${repFresh} Fresh) | ${repAppts} Appts Set | ${repVisits} Store Visits`;
+                }).join('\n')
+                : '- No team members marked as Here Today.';
+
+            const report = 
+`================================================
+GROOVE SUBARU - MIDDAY INTERNET REPORT (12-2 PM)
+Date: ${dateVal}
+================================================
+
+MIDDAY TEAM TOTALS (${workingReps.length} Reps Active)
+- Total Leads Received Today: ${totalLeadsToday} (${totalOvernight} Overnight / ${totalFresh} Fresh)
+- Total Appointments Set Today: ${totalApptsSet}
+- Total Store Visits Today: ${totalStoreVisits}
+
+REP BREAKDOWN (A-Z)
+${repMiddayLines}
+================================================`;
+
+            document.getElementById('middayReportText').value = report;
+            document.getElementById('middayModal').classList.remove('hidden');
+        }
+
+        function closeMiddayModal() {
+            document.getElementById('middayModal').classList.add('hidden');
+        }
+
+        function copyMiddayReport() {
+            const textarea = document.getElementById('middayReportText');
+            textarea.select();
+            document.execCommand('copy');
+
+            const msg = document.getElementById('copyMiddayConfirmMsg');
+            msg.classList.remove('opacity-0');
+            setTimeout(() => msg.classList.add('opacity-0'), 2500);
+        }
+
+        function downloadMiddayTxt() {
+            const dateVal = document.getElementById('trackerDate').value || 'today';
+            const reportText = document.getElementById('middayReportText').value;
+            const blob = new Blob([reportText], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Groove_Subaru_Midday_Report_${dateVal}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // --- END OF DAY (EOD) REPORT GENERATOR & EXPORT ---
+        function openEodModal() {
+            const dateVal = document.getElementById('trackerDate').value;
+            const workingReps = teamRoster
+                .filter(r => r.presentToday)
+                .sort((a, b) => a.name.localeCompare(b.name));
+
+            const totalOvernight = workingReps.reduce((sum, r) => sum + (parseInt(r.overnightAssigned) || 0), 0);
+            const totalFresh = workingReps.reduce((sum, r) => sum + (parseInt(r.freshLeads) || 0), 0);
+            const totalLeadsToday = totalOvernight + totalFresh;
+            const totalApptsSet = workingReps.reduce((sum, r) => sum + (parseInt(r.apptsSet) || 0), 0);
+            const totalStoreVisits = workingReps.reduce((sum, r) => sum + (parseInt(r.storeVisits) || 0), 0);
+            const totalMtdVisits = workingReps.reduce((sum, r) => sum + (parseInt(r.mtdStoreVisits) || 0), 0);
+
+            const repEodLines = workingReps.length > 0
+                ? workingReps.map(r => {
+                    const repOver = parseInt(r.overnightAssigned) || 0;
+                    const repFresh = parseInt(r.freshLeads) || 0;
+                    const repTotalLeads = repOver + repFresh;
+                    const repAppts = parseInt(r.apptsSet) || 0;
+                    const repVisits = parseInt(r.storeVisits) || 0;
+                    const repMtdVisits = parseInt(r.mtdStoreVisits) || 0;
+                    return `- ${r.name}: ${repTotalLeads} Leads Today (${repOver} Overnight, ${repFresh} Fresh) | ${repAppts} Appts Set | ${repVisits} Store Visits Today | ${repMtdVisits} MTD Visits`;
+                }).join('\n')
+                : '- No team members marked as Here Today.';
+
+            const report = 
+`================================================
+GROOVE SUBARU - END OF DAY (EOD) INTERNET REPORT
+Date: ${dateVal}
+================================================
+
+EOD TEAM TOTALS (${workingReps.length} Reps Active)
+- Total Leads Received Today: ${totalLeadsToday} (${totalOvernight} Overnight / ${totalFresh} Fresh)
+- Total Appointments Set Today: ${totalApptsSet}
+- Total Store Visits Today: ${totalStoreVisits}
+- Total MTD Store Visits: ${totalMtdVisits}
+
+REP BREAKDOWN (A-Z)
+${repEodLines}
+================================================`;
+
+            document.getElementById('eodReportText').value = report;
+            document.getElementById('eodModal').classList.remove('hidden');
+        }
+
+        function closeEodModal() {
+            document.getElementById('eodModal').classList.add('hidden');
+        }
+
+        function copyEodReport() {
+            const textarea = document.getElementById('eodReportText');
+            textarea.select();
+            document.execCommand('copy');
+
+            const msg = document.getElementById('copyEodConfirmMsg');
+            msg.classList.remove('opacity-0');
+            setTimeout(() => msg.classList.add('opacity-0'), 2500);
+        }
+
+        function downloadEodTxt() {
+            const dateVal = document.getElementById('trackerDate').value || 'today';
+            const reportText = document.getElementById('eodReportText').value;
+            const blob = new Blob([reportText], { type: 'text/plain;charset=utf-8' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `Groove_Subaru_EOD_Report_${dateVal}.txt`;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+        }
+
+        // --- RESET DAILY COUNTS ---
+        function confirmResetDay() {
+            document.getElementById('resetModal').classList.remove('hidden');
+        }
+
+        function closeResetModal() {
+            document.getElementById('resetModal').classList.add('hidden');
+        }
+
+        function executeResetDay() {
+            document.getElementById('apptsNew').value = 0;
+            document.getElementById('apptsUsed').value = 0;
+            document.getElementById('apptsAcq').value = 0;
+            document.getElementById('overnightNew').value = 0;
+            document.getElementById('overnightUsed').value = 0;
+
+            teamRoster.forEach(rep => {
+                rep.overnightAssigned = 0;
+                rep.freshLeads = 0;
+                rep.allContacted = false;
+                rep.outboundCalls = 0;
+                rep.apptsSet = 0;
+                rep.storeVisits = 0;
+                rep.notes = '';
+            });
+
+            updateDashboard();
+            renderRoster();
+            closeResetModal();
+        }
+    </script>
+</body>
+</html>
